@@ -228,8 +228,8 @@ async function main() {
         console.log(`== Skip (already installed): ${skillName}`);
         continue;
       }
-      console.log(`==> npx skills add ${repoUrl} --skill ${skillName} --global`);
-      run("npx", ["skills", "add", repoUrl, "--skill", skillName, "--global", "-y"]);
+      console.log(`==> npx skills add ${repoUrl} --skill ${skillName} --agent pi --global`);
+      run("npx", ["skills", "add", repoUrl, "--skill", skillName, "--agent", "pi", "--global", "-y"]);
     }
 
     // Update all globally-installed skills to their latest versions.
