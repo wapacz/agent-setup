@@ -21,6 +21,7 @@ import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import zlib from "node:zlib";
 
 const DEFAULT_REPO = "rytswd/pi-agent-extensions";
 const BRANCH = "main";
@@ -83,23 +84,31 @@ const COPY_SKILLS = process.platform === "win32";
 // Helpers
 // ---------------------------------------------------------------------------
 
-const GITHUB_HEADERS = {
-  "User-Agent": "install-pi-extensions",
-  Accept: "application/vnd.github+json",
-  ...(process.env.GITHUB_TOKEN
-    ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
-    : {}),
-};
+const USER_AGENT = "install-pi-extensions";
+
+// Quote an argument if it contains whitespace or quotes (for shell invocation).
+function shellQuote(arg) {
+  return /[\s"]/.test(arg) ? `"${arg.replace(/"/g, '\\"')}"` : arg;
+}
+
+// Build a single command line so we can use shell:true (needed on Windows for
+// .cmd/.exe shims) WITHOUT passing an args array (avoids Node DEP0190 warning).
+function buildCommandLine(command, args) {
+  return [command, ...args.map(shellQuote)].join(" ");
+}
 
 /** Run a command through the shell so Windows .cmd/.exe shims resolve. */
 function run(command, args = []) {
-  const result = spawnSync(command, args, { stdio: "inherit", shell: true });
+  const result = spawnSync(buildCommandLine(command, args), {
+    stdio: "inherit",
+    shell: true,
+  });
   return result.status === 0;
 }
 
 /** Check whether a command exists on PATH. */
 function hasCommand(command) {
-  const probe = spawnSync(command, ["--version"], {
+  const probe = spawnSync(buildCommandLine(command, ["--version"]), {
     stdio: "ignore",
     shell: true,
   });
@@ -108,7 +117,7 @@ function hasCommand(command) {
 
 /** Download a single file (text or binary) to disk. */
 async function downloadFile(url, destPath) {
-  const response = await fetch(url, { headers: { "User-Agent": "install-pi-extensions" } });
+  const response = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
   if (!response.ok) {
     throw new Error(`GET ${url} -> ${response.status} ${response.statusText}`);
   }
@@ -117,23 +126,86 @@ async function downloadFile(url, destPath) {
   await writeFile(destPath, buffer);
 }
 
-/** Recursively download a repo directory via the GitHub contents API. */
-async function downloadDir(repo, repoPath, destDir) {
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${repoPath}?ref=${BRANCH}`;
-  const response = await fetch(apiUrl, { headers: GITHUB_HEADERS });
-  if (!response.ok) {
-    throw new Error(`GET ${apiUrl} -> ${response.status} ${response.statusText}`);
-  }
-  const entries = await response.json();
-  await mkdir(destDir, { recursive: true });
+// Read a NUL-terminated string from a fixed-width tar header field.
+function readTarField(header, start, length) {
+  const raw = header.subarray(start, start + length);
+  const end = raw.indexOf(0);
+  return raw.toString("utf8", 0, end === -1 ? length : end).trim();
+}
 
-  for (const entry of entries) {
-    const target = path.join(destDir, entry.name);
-    if (entry.type === "dir") {
-      await downloadDir(repo, entry.path, target);
-    } else if (entry.type === "file") {
-      await downloadFile(entry.download_url, target);
+// Minimal tar parser (ustar + GNU long names). Returns Map<path, Buffer> of files.
+function parseTar(buffer) {
+  const files = new Map();
+  let offset = 0;
+  let longName = null;
+  while (offset + 512 <= buffer.length) {
+    const header = buffer.subarray(offset, offset + 512);
+    offset += 512;
+    if (header.every((byte) => byte === 0)) break; // end-of-archive marker
+
+    const size = parseInt(readTarField(header, 124, 12) || "0", 8) || 0;
+    const typeflag = String.fromCharCode(header[156]);
+    const blocks = Math.ceil(size / 512) * 512;
+
+    if (typeflag === "L") {
+      // GNU long filename: the real name is stored in this entry's data.
+      longName = buffer.toString("utf8", offset, offset + size).replace(/\0+$/, "");
+      offset += blocks;
+      continue;
     }
+    if (typeflag === "x" || typeflag === "g") {
+      offset += blocks; // pax extended headers — ignored
+      continue;
+    }
+
+    let name = longName || readTarField(header, 0, 100);
+    const prefix = readTarField(header, 345, 155);
+    if (!longName && prefix) name = `${prefix}/${name}`;
+    longName = null;
+
+    if (typeflag === "0" || typeflag === "\0" || typeflag === "") {
+      files.set(name, Buffer.from(buffer.subarray(offset, offset + size)));
+    }
+    offset += blocks;
+  }
+  return files;
+}
+
+// Download + gunzip + parse a repo tarball from codeload (no API rate limit).
+// Cached per repo so multiple extensions from the same repo download once.
+const repoTarCache = new Map();
+async function getRepoFiles(repo) {
+  if (repoTarCache.has(repo)) return repoTarCache.get(repo);
+  const url = `https://codeload.github.com/${repo}/tar.gz/refs/heads/${BRANCH}`;
+  const response = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
+  if (!response.ok) {
+    throw new Error(`GET ${url} -> ${response.status} ${response.statusText}`);
+  }
+  const gzipped = Buffer.from(await response.arrayBuffer());
+  const files = parseTar(zlib.gunzipSync(gzipped));
+  repoTarCache.set(repo, files);
+  return files;
+}
+
+// Extract one repo directory (repoPath) into destDir, using the cached tarball.
+async function downloadDir(repo, repoPath, destDir) {
+  const files = await getRepoFiles(repo);
+  const wantPrefix = `${repoPath}/`;
+  let wrote = 0;
+
+  for (const [fullPath, data] of files) {
+    // Tarball paths are `<repo>-<branch>/<...>`; drop the top-level segment.
+    const rel = fullPath.split("/").slice(1).join("/");
+    if (rel !== repoPath && !rel.startsWith(wantPrefix)) continue;
+    const sub = rel.slice(repoPath.length).replace(/^\/+/, "");
+    const dest = sub ? path.join(destDir, sub) : destDir;
+    await mkdir(path.dirname(dest), { recursive: true });
+    await writeFile(dest, data);
+    wrote++;
+  }
+
+  if (wrote === 0) {
+    throw new Error(`path '${repoPath}' not found in ${repo}@${BRANCH}`);
   }
 }
 
@@ -218,7 +290,7 @@ async function main() {
 
   if (builtinRun && SKILLS.length > 0) {
     // Snapshot of already-installed skills so we skip re-adding them.
-    const listed = spawnSync("npx", ["skills", "list"], {
+    const listed = spawnSync(buildCommandLine("npx", ["skills", "list"]), {
       encoding: "utf8",
       shell: true,
     });

@@ -32,9 +32,10 @@ git clone git@github.com:wapacz/agent-setup.git .pi && node .pi/install-pi-exten
 
 `install-pi-extensions.mjs` then:
 
-1. **Downloads extensions** into `agent/extensions/` — directories via the GitHub
-   API (runs `bun install` if they ship a `package.json`), single `.ts` files
-   via `raw.githubusercontent.com`.
+1. **Downloads extensions** into `agent/extensions/` — directories via the repo
+   tarball on `codeload.github.com` (runs `bun install` if they ship a
+   `package.json`), single `.ts` files via `raw.githubusercontent.com`. Neither
+   uses the GitHub API, so there's no rate-limit / token requirement.
 2. **Installs pi packages** via `pi install` (providers, themes, subagents, …).
 3. **Installs skills globally** via `npx skills add … --global`, skipping any
    already installed, then runs `npx skills update --global`.
@@ -44,7 +45,6 @@ git clone git@github.com:wapacz/agent-setup.git .pi && node .pi/install-pi-exten
 - **Node.js ≥ 18** (built-in `fetch`) — required
 - **pi** on `PATH` — for the `pi install` step (skipped with a warning if missing)
 - **bun** — only for extensions that ship a `package.json` (skipped with a warning if missing)
-- Optional: `GITHUB_TOKEN` env var to raise the GitHub API rate limit (60/h anonymous)
 
 ## Usage
 
