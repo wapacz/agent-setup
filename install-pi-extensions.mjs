@@ -74,6 +74,11 @@ const SKILLS = [
   ["https://github.com/igorwarzocha/opencode-workflows", "powerpoint"],
 ];
 
+// Agents to install skills for. On Windows we copy (symlinks need Developer
+// Mode / admin); on Linux/macOS we use the default symlink behavior.
+const SKILL_AGENTS = ["claude-code", "pi", "kiro-cli"];
+const COPY_SKILLS = process.platform === "win32";
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -228,8 +233,12 @@ async function main() {
         console.log(`== Skip (already installed): ${skillName}`);
         continue;
       }
-      console.log(`==> npx skills add ${repoUrl} --skill ${skillName} --agent pi --global`);
-      run("npx", ["skills", "add", repoUrl, "--skill", skillName, "--agent", "pi", "--global", "-y"]);
+      const agentArgs = SKILL_AGENTS.flatMap((agent) => ["--agent", agent]);
+      const copyArgs = COPY_SKILLS ? ["--copy"] : [];
+      console.log(
+        `==> npx skills add ${repoUrl} --skill ${skillName} --agent ${SKILL_AGENTS.join(" ")} --global${COPY_SKILLS ? " --copy" : ""}`
+      );
+      run("npx", ["skills", "add", repoUrl, "--skill", skillName, ...agentArgs, "--global", ...copyArgs, "-y"]);
     }
 
     // Update all globally-installed skills to their latest versions.
