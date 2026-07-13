@@ -289,6 +289,18 @@ async function main() {
   }
 
   if (builtinRun && SKILLS.length > 0) {
+    // The `skills` CLI uses the GitHub API (tree fetches) for add/update, which
+    // is rate-limited to 60 req/h when unauthenticated. Warn if no token.
+    if (!process.env.GITHUB_TOKEN) {
+      console.warn(
+        "!! GITHUB_TOKEN not set — 'npx skills' may hit GitHub's 60 req/h limit.\n" +
+        "   Set a token (repo read is enough) to raise it to 5000/h, e.g.:\n" +
+        (process.platform === "win32"
+          ? '   $env:GITHUB_TOKEN="ghp_xxx"; node install-pi-extensions.mjs'
+          : "   GITHUB_TOKEN=ghp_xxx node install-pi-extensions.mjs")
+      );
+    }
+
     // Snapshot of already-installed skills so we skip re-adding them.
     const listed = spawnSync(buildCommandLine("npx", ["skills", "list"]), {
       encoding: "utf8",

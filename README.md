@@ -45,6 +45,16 @@ git clone git@github.com:wapacz/agent-setup.git .pi && node .pi/install-pi-exten
 - **Node.js ≥ 18** (built-in `fetch`) — required
 - **pi** on `PATH` — for the `pi install` step (skipped with a warning if missing)
 - **bun** — only for extensions that ship a `package.json` (skipped with a warning if missing)
+- Optional but recommended: **`GITHUB_TOKEN`** env var — the `skills` CLI uses the
+  GitHub API for `add`/`update` and is limited to 60 req/h unauthenticated. A
+  token (public repo read is enough) raises it to 5000/h.
+
+  ```bash
+  # Linux/macOS
+  GITHUB_TOKEN=ghp_xxx node install-pi-extensions.mjs
+  # Windows (PowerShell)
+  $env:GITHUB_TOKEN="ghp_xxx"; node install-pi-extensions.mjs
+  ```
 
 ## Usage
 
