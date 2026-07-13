@@ -12,6 +12,7 @@ skills-lock.json
 agent/*
 !agent/extensions/
 !agent/prompts/
+!agent/settings.json
 
 # extensions/: ignore all, whitelist only self-authored extensions
 agent/extensions/*

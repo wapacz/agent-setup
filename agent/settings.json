@@ -1,0 +1,40 @@
+{
+  "lastChangelogVersion": "0.80.6",
+  "defaultProvider": "amazon-bedrock",
+  "defaultModel": "us.anthropic.claude-opus-4-8",
+  "defaultThinkingLevel": "high",
+  "showHardwareCursor": false,
+  "editorPaddingX": 0,
+  "treeFilterMode": "default",
+  "enableSkillCommands": true,
+  "packages": [
+    "npm:pi-provider-kiro",
+    {
+      "source": "npm:my-pi-themes",
+      "themes": [
+        "+themes/onedark-pro.json"
+      ]
+    },
+    "npm:pi-subagents",
+    "npm:@spences10/pi-themes",
+    "npm:remote-pi",
+    "git:github.com/obra/superpowers",
+    "npm:pi-mcp-adapter"
+  ],
+  "theme": "one-dark",
+  "terminal": {
+    "showTerminalProgress": true
+  },
+  "steeringMode": "one-at-a-time",
+  "followUpMode": "one-at-a-time",
+  "skills": [
+    "-skills/google-agents-cli-adk-code/SKILL.md",
+    "-skills/google-agents-cli-deploy/SKILL.md",
+    "-skills/google-agents-cli-eval/SKILL.md",
+    "-skills/google-agents-cli-observability/SKILL.md",
+    "-skills/google-agents-cli-publish/SKILL.md",
+    "-skills/google-agents-cli-scaffold/SKILL.md",
+    "-skills/google-agents-cli-workflow/SKILL.md",
+    "-skills/baoyu-image-gen/SKILL.md"
+  ]
+}
