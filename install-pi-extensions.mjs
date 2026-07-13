@@ -73,6 +73,15 @@ const SKILLS = [
   ["https://github.com/NicholasSpisak/second-brain", "second-brain-lint"],
   ["https://github.com/NicholasSpisak/second-brain", "second-brain-query"],
   ["https://github.com/igorwarzocha/opencode-workflows", "powerpoint"],
+  ["https://github.com/mattpocock/skills", "grill-me"],
+  ["https://github.com/mattpocock/skills", "grill-with-docs"],
+  ["https://github.com/mattpocock/skills", "handoff"],
+  ["https://github.com/mattpocock/skills", "improve-codebase-architecture"],
+  ["https://github.com/anthropics/skills", "skill-creator"],
+  ["https://github.com/anthropics/skills", "frontend-design"],
+  ["https://github.com/vercel-labs/agent-skills", "vercel-composition-patterns"],
+  ["https://github.com/vercel-labs/agent-skills", "web-design-guidelines"],
+  ["https://github.com/coleam00/excalidraw-diagram-skill", "excalidraw-diagram"],
 ];
 
 // Agents to install skills for. On Windows we copy (symlinks need Developer
