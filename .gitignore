@@ -19,4 +19,12 @@ agent/extensions/*
 !agent/extensions/aws-sso-auto-relogin.ts
 !agent/extensions/slim-ui.ts
 
+# skills/: ignore installed skills, whitelist only self-authored ones
+!agent/skills/
+agent/skills/*
+!agent/skills/obsidian-daily/
+
 # prompts/: tracked entirely (dir whitelisted above)
+
+# python caches inside skills
+agent/skills/obsidian-daily/**/__pycache__/
