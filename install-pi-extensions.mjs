@@ -37,7 +37,7 @@ const EXTENSIONS = [
   "rytswd/pi-agent-extensions:notify",
   "rytswd/pi-agent-extensions:fetch",
   "rytswd/pi-agent-extensions:slow-mode",
-  "rytswd/pi-agent-extensions:statusline",
+  // "rytswd/pi-agent-extensions:statusline",
 
   // disler/pi-vs-claude-code (single-file .ts extensions)
   // "disler/pi-vs-claude-code:extensions/minimal.ts",
@@ -47,10 +47,9 @@ const EXTENSIONS = [
 // Packages installed via the `pi install` CLI (npm:, git:, https://, ./local).
 const PI_PACKAGES = [
   "npm:pi-provider-kiro",
-  "npm:my-pi-themes",
-  "npm:pi-subagents",
+  "npm:@tintinweb/pi-subagents",
   "npm:@spences10/pi-themes",
-  "npm:remote-pi",
+  // "npm:remote-pi",
   "git:github.com/obra/superpowers",
   "npm:pi-mcp-adapter",
 ];

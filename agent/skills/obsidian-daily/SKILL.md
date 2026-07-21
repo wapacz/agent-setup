@@ -3,11 +3,15 @@ name: obsidian-daily
 description: >-
   Save tasks, daily summaries, and session digests into Michal's Obsidian vault
   following its conventions (Tasks plugin priorities/dates, daily-note sections,
-  ADHD micro-steps). Use when the user wants to add or complete a task, log what
-  they did today, create today's daily note, run a weekly review, or (only on
-  explicit request) gather notes from all of today's Pi sessions into the daily
-  note. Triggers: "dodaj task", "zapisz zadanie", "odhacz", "zrobione",
-  "podsumuj dzień", "notatka z całego dnia", "przegląd tygodnia".
+  ADHD micro-steps). Also use to READ or BROWSE the vault: open/read a specific
+  note, search notes by content or title, list recent notes, or explore folders.
+  Use when the user wants to add or complete a task, log what they did today,
+  create today's daily note, run a weekly review, read/find/browse existing
+  notes, or (only on explicit request) gather notes from all of today's Pi
+  sessions into the daily note. Triggers: "dodaj task", "zapisz zadanie",
+  "odhacz", "zrobione", "podsumuj dzień", "notatka z całego dnia",
+  "przegląd tygodnia", "wczytaj notatkę", "otwórz notatkę", "znajdź notatkę",
+  "pokaż notatki", "co mam w vaultcie".
 ---
 
 # Obsidian Daily
@@ -56,6 +60,13 @@ Get "today" with `date +%F`. Never hardcode the date.
 
 **Linking:** use `[[Double Brackets]]` for internal links. Keep emoji folder
 prefixes intact.
+
+**No redundant H1 title:** Obsidian shows the filename as the page header
+automatically. Do NOT add a top-level `# Title` that just repeats the filename
+(e.g. a note `2026-07-15 — baseline.md` should start with its first `##` section,
+not `# 2026-07-15 — baseline`). The daily-note scaffold above keeps its `# 📅 <date>`
+heading for backward compatibility, but for any NEW standalone note start straight
+with content/`##` sections.
 
 ## Capabilities
 
@@ -147,6 +158,53 @@ Steps:
 
    Link related clusters with `[[]]` when they share a project. Offer to turn any
    "następny krok" into a task.
+
+### 7. Read / find / browse notes (READ-ONLY)
+
+Use when the user wants to open a note, search the vault, or explore what's
+there. This is read-only — never modify anything under this capability.
+
+**Open a specific note by name.** The user usually gives a title, not a path.
+Resolve it case-insensitively across the whole vault (titles contain spaces,
+em-dashes `—`, and emoji), then `read` the match:
+
+```bash
+VAULT="/mnt/c/Users/qmiclap/OneDrive - Ericsson/Documents/Obsidian Vault"
+find "$VAULT" -type f -iname "*<fragment>*.md" -not -path "*/.git/*" -not -path "*/.obsidian/*"
+```
+
+If several match, list them (with folder) and ask which one. Always exclude
+`.git/` and `.obsidian/` from every search.
+
+**Search by content** (full-text across notes):
+
+```bash
+grep -rl --include="*.md" "<phrase>" "$VAULT" | grep -v "/.git/" | grep -v "/.obsidian/"
+# add -i for case-insensitive; use rg if available for speed
+```
+
+Report matches as note titles + the relevant snippet, not raw paths only.
+
+**List recent notes** (what was touched lately):
+
+```bash
+find "$VAULT" -type f -name "*.md" -not -path "*/.git/*" -not -path "*/.obsidian/*" \
+  -printf "%TY-%Tm-%Td %p\n" | sort -r | head -20
+```
+
+**Browse structure / folders:**
+
+```bash
+find "$VAULT" -maxdepth 1 -type d -not -name ".*"          # top-level folders
+ls -1 "$VAULT/📄 Inbox"                                    # notes in a folder
+```
+
+Key folders to know: `📅 Daily Notes/`, `📋 Dashboard/`, `📄 Inbox/`, plus any
+project/topic folders. When following `[[wikilinks]]` from a note, resolve the
+link text to a `.md` filename with the same `-iname "*<link>*.md"` search.
+
+After reading, give a concise summary (not a full dump unless asked) and offer
+relevant follow-ups (e.g. turn a "następny krok" into a task via capability 1).
 
 ## Safety rules
 

@@ -1,27 +1,20 @@
 {
-  "lastChangelogVersion": "0.80.6",
+  "lastChangelogVersion": "0.80.10",
   "defaultProvider": "amazon-bedrock",
   "defaultModel": "us.anthropic.claude-opus-4-8",
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "xhigh",
   "showHardwareCursor": false,
   "editorPaddingX": 0,
   "treeFilterMode": "default",
   "enableSkillCommands": true,
   "packages": [
     "npm:pi-provider-kiro",
-    {
-      "source": "npm:my-pi-themes",
-      "themes": [
-        "+themes/onedark-pro.json"
-      ]
-    },
-    "npm:pi-subagents",
     "npm:@spences10/pi-themes",
-    "npm:remote-pi",
     "git:github.com/obra/superpowers",
-    "npm:pi-mcp-adapter"
+    "npm:pi-mcp-adapter",
+    "npm:@tintinweb/pi-subagents"
   ],
-  "theme": "one-dark",
+  "theme": "night-owl",
   "terminal": {
     "showTerminalProgress": true
   },
@@ -36,5 +29,9 @@
     "-skills/google-agents-cli-scaffold/SKILL.md",
     "-skills/google-agents-cli-workflow/SKILL.md",
     "-skills/baoyu-image-gen/SKILL.md"
-  ]
+  ],
+  "hideThinkingBlock": true,
+  "compaction": {
+    "enabled": true
+  }
 }
