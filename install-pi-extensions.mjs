@@ -52,6 +52,11 @@ const PI_PACKAGES = [
   // "npm:remote-pi",
   "git:github.com/obra/superpowers",
   "npm:pi-mcp-adapter",
+  "npm:@aliou/pi-guardrails",
+  "npm:@maxedapps/pi-subagents-herdr",
+  "npm:pi-markdown-preview",
+  "npm:pi-web-access",
+  "npm:pi-protected-paths",
 ];
 
 // Skills installed via the `skills` CLI. Each entry is [repoUrl, skillName].

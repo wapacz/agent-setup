@@ -1,7 +1,7 @@
 {
-  "lastChangelogVersion": "0.80.10",
-  "defaultProvider": "amazon-bedrock",
-  "defaultModel": "us.anthropic.claude-opus-4-8",
+  "lastChangelogVersion": "0.81.1",
+  "defaultProvider": "kiro",
+  "defaultModel": "claude-opus-4-8",
   "defaultThinkingLevel": "xhigh",
   "showHardwareCursor": false,
   "editorPaddingX": 0,
@@ -12,7 +12,8 @@
     "npm:@spences10/pi-themes",
     "git:github.com/obra/superpowers",
     "npm:pi-mcp-adapter",
-    "npm:@tintinweb/pi-subagents"
+    "npm:@tintinweb/pi-subagents",
+    "npm:@aliou/pi-guardrails"
   ],
   "theme": "night-owl",
   "terminal": {

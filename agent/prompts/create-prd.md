@@ -11,7 +11,13 @@ Generate a comprehensive Product Requirements Document (PRD) based on the curren
 
 ## Output File
 
-Write the PRD to: `$ARGUMENTS` (default: `PRD.md`)
+Write the PRD to: `$ARGUMENTS`.
+
+When no path is given, default to `.agents/PRDs/<topic>.md`, where `<topic>` is a short
+kebab-case slug derived from what the PRD is about (e.g.
+`.agents/PRDs/multi-tenant-shared-colpali-rag-service.md`). Create the `.agents/PRDs/`
+directory if it does not already exist. Never dump the PRD as a bare `PRD.md` in the repo
+root unless the user explicitly asks for that path.
 
 ## PRD Structure
 
